@@ -126,17 +126,28 @@ class PresidioUnavailable(RuntimeError):
 def load_presidio():
     try:
         from presidio_analyzer import AnalyzerEngine, Pattern, PatternRecognizer  # type: ignore
+        from presidio_analyzer.nlp_engine import NlpEngineProvider  # type: ignore
     except Exception as exc:
         raise PresidioUnavailable(
             "Presidio is not installed. Install presidio-analyzer and presidio-anonymizer first."
         ) from exc
 
-    return AnalyzerEngine, Pattern, PatternRecognizer
+    return AnalyzerEngine, Pattern, PatternRecognizer, NlpEngineProvider
 
 
 def build_analyzer(deny_list: List[str] | None = None):
-    AnalyzerEngine, Pattern, PatternRecognizer = load_presidio()
-    analyzer = AnalyzerEngine()
+    AnalyzerEngine, Pattern, PatternRecognizer, NlpEngineProvider = load_presidio()
+    
+    # Explicitly use lightweight en_core_web_sm model to fit within 512MB RAM limits on cloud hosts (Render)
+    try:
+        provider = NlpEngineProvider(nlp_configuration={
+            "nlp_engine_name": "spacy",
+            "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}]
+        })
+        nlp_engine = provider.create_engine()
+        analyzer = AnalyzerEngine(nlp_engine=nlp_engine)
+    except Exception:
+        analyzer = AnalyzerEngine()
 
     recognizers = []
 
@@ -343,7 +354,7 @@ def redact_docx(
                     }:
                         discovered_tokens.add(token)
         if discovered_tokens:
-            AnalyzerEngine, Pattern, PatternRecognizer = load_presidio()
+            AnalyzerEngine, Pattern, PatternRecognizer, _ = load_presidio()
             analyzer.registry.add_recognizer(
                 PatternRecognizer(supported_entity="PERSON", deny_list=list(discovered_tokens))
             )
