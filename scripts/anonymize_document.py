@@ -468,8 +468,10 @@ def redact_file(
     deny_list: List[str] | None = None,
     score_threshold: float = 0.25,
     mode: str = "anonymize",
+    analyzer: Any | None = None,
 ) -> dict:
-    analyzer = build_analyzer(deny_list=deny_list)
+    if analyzer is None or deny_list is not None:
+        analyzer = build_analyzer(deny_list=deny_list)
     anonymizer = SyntheticAnonymizer(mode=mode)
     suffix = input_path.suffix.lower()
 

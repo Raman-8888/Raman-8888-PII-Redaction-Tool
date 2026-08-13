@@ -107,7 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
         body: formData
       });
 
-      const data = await response.json();
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = { success: false, error: `Server error (${response.status} ${response.statusText})` };
+      }
 
       if (response.ok && data.success) {
         updateProgress(100, 'Processing Complete!');
@@ -117,12 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
           anonymizeBtn.disabled = false;
         }, 500);
       } else {
-        alert('Anonymization failed: ' + (data.error || 'Unknown error'));
+        alert('Anonymization failed: ' + (data.error || 'Server processing error'));
         progressSection.classList.add('hidden');
         anonymizeBtn.disabled = false;
       }
     } catch (err) {
-      alert('Network error during file processing.');
+      alert('Network error or connection timeout during file processing: ' + err.message);
       progressSection.classList.add('hidden');
       anonymizeBtn.disabled = false;
     }

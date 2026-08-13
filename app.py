@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 import sys
 sys.path.append(str(Path(__file__).parent / "scripts"))
 
-from anonymize_document import redact_file
+from anonymize_document import redact_file, build_analyzer
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -22,6 +22,14 @@ UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {".docx", ".pdf", ".pptx"}
+
+# Pre-load Presidio Analyzer engine at server boot
+GLOBAL_ANALYZER = None
+try:
+    GLOBAL_ANALYZER = build_analyzer()
+    print("Presidio Analyzer Engine pre-loaded successfully!")
+except Exception as e:
+    print(f"Warning: Presidio pre-load error: {e}")
 
 
 def allowed_file(filename):
@@ -67,6 +75,7 @@ def anonymize_file():
             deny_list=deny_list,
             score_threshold=0.25,
             mode=mode,
+            analyzer=GLOBAL_ANALYZER,
         )
 
         return jsonify({
