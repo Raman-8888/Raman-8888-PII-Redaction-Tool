@@ -1,0 +1,79 @@
+========================================================================
+             ANONYMIZE DOCUMENTS WITH PRESIDIO - SETUP & RUN GUIDE
+========================================================================
+
+Prerequisites:
+--------------
+- Python 3.9+ (Python 3.10+ recommended)
+- pip package manager
+
+------------------------------------------------------------------------
+STEP 1: Install Required Dependencies
+------------------------------------------------------------------------
+Open a terminal in the project directory (`anonymize-documents-with-presidio`)
+and run:
+
+    pip install presidio-analyzer presidio-anonymizer spacy python-docx python-pptx pymupdf
+
+------------------------------------------------------------------------
+STEP 2: Download the Required spaCy Language Model
+------------------------------------------------------------------------
+Presidio requires a spaCy English NLP model for entity detection. Download it with:
+
+    python -m spacy download en_core_web_sm
+
+(Optional: You can also download `en_core_web_lg` for higher precision)
+    python -m spacy download en_core_web_lg
+
+------------------------------------------------------------------------
+STEP 3: Place Input Files
+------------------------------------------------------------------------
+Place your input PDF, Word (.docx), or PowerPoint (.pptx) files inside the `input` directory:
+
+    anonymize-documents-with-presidio/
+    ├── input/
+    │   └── your_document.docx
+
+------------------------------------------------------------------------
+STEP 4: Run Document Anonymization
+------------------------------------------------------------------------
+
+Option A: Process a Single Document (Basic)
+-------------------------------------------
+Run the script specifying the input file and output destination:
+
+    python scripts/anonymize_document.py "input/your_document.docx" "output/your_document_redacted.docx"
+
+Option B: Process with Audit Report Generation
+---------------------------------------------
+Add the `--report` flag to generate a JSON report with redaction statistics:
+
+    python scripts/anonymize_document.py "input/your_document.docx" "output/your_document_redacted.docx" --report
+
+Option C: Force Redact Custom Names / Words (Deny List)
+-------------------------------------------------------
+Use `--deny-list` to specify comma-separated custom words or names to guarantee redaction:
+
+    python scripts/anonymize_document.py "input/your_document.docx" "output/your_document_redacted.docx" --deny-list "John Doe,Company XYZ"
+
+Option D: Adjust Presidio Confidence Score Threshold
+----------------------------------------------------
+Adjust `--score-threshold` (default is 0.25; lower value catches more potential matches):
+
+    python scripts/anonymize_document.py "input/your_document.docx" "output/your_document_redacted.docx" --score-threshold 0.20
+
+Option E: Batch Process an Entire Directory
+-------------------------------------------
+Pass directories as input and output arguments to process all PDF, DOCX, and PPTX files in bulk:
+
+    python scripts/anonymize_document.py input/ output/ --report
+
+------------------------------------------------------------------------
+Features Summary:
+-----------------
+1. Multi-Format Redaction: PDF, DOCX, PPTX
+2. Multi-Pass Auto-Deny: Auto-propagates detected full names across entire document
+3. Metadata Scrubbing: Removes author, title, and last modified properties
+4. Indian/Global Financial IDs: Redacts PAN, DIN, CIN, Aadhaar, Passports
+5. Audit Reporting: Generates JSON report summarizing redactions and units processed
+========================================================================

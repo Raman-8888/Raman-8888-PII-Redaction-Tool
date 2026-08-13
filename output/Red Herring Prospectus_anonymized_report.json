@@ -1,0 +1,6 @@
+{
+  "input_file": "D:\\assignment\\anonymize-documents-with-presidio\\input\\Red Herring Prospectus_redacted.docx",
+  "output_file": "D:\\assignment\\anonymize-documents-with-presidio\\output\\Red Herring Prospectus_anonymized.docx",
+  "total_redactions": 4801,
+  "processed_units": 4686
+}
