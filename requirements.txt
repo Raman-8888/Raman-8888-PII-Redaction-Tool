@@ -1,0 +1,10 @@
+flask
+gunicorn
+presidio-analyzer
+presidio-anonymizer
+spacy
+python-docx
+python-pptx
+pymupdf
+faker
+requests
