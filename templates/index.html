@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PII Document Redaction & Anonymization Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="background-globes">
+    <div class="globe globe-1"></div>
+    <div class="globe globe-2"></div>
+  </div>
+
+  <main class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="badge">
+        <span class="badge-dot"></span> AI-Powered Privacy Suite
+      </div>
+      <h1>PII Document Anonymizer</h1>
+      <p class="subtitle">Securely strip names, emails, phone numbers, and sensitive IDs from Word (.docx), PDF, and PowerPoint documents using synthetic replacements.</p>
+    </header>
+
+    <!-- Main Card -->
+    <div class="card glass-card">
+      
+      <!-- Upload Dropzone -->
+      <div class="upload-area" id="dropzone">
+        <input type="file" id="fileInput" accept=".docx,.pdf,.pptx" hidden>
+        <div class="upload-icon-wrapper">
+          <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <h3 class="upload-title">Drop your document here or <span class="highlight">browse</span></h3>
+        <p class="upload-hint">Supports Word (.docx), PDF (.pdf), and PowerPoint (.pptx)</p>
+        <div id="fileDetails" class="file-details hidden">
+          <svg class="doc-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span id="fileName">selected_document.docx</span>
+          <button id="removeFileBtn" class="btn-icon" title="Remove file">&times;</button>
+        </div>
+      </div>
+
+      <!-- Settings Controls -->
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="modeSelect">Anonymization Mode</label>
+          <select id="modeSelect" class="input-select">
+            <option value="anonymize" selected>Synthetic Replacement (Fake Names, Emails, Phones)</option>
+            <option value="redact">Static Redaction ([REDACTED] Tokens)</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <label for="denyList">Custom Force Deny List (Optional)</label>
+          <input type="text" id="denyList" class="input-text" placeholder="e.g. Rashi Patil, Company XYZ">
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="action-wrapper">
+        <button id="anonymizeBtn" class="btn-primary" disabled>
+          <svg class="btn-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          Anonymize Document
+        </button>
+      </div>
+
+      <!-- Progress Bar Section -->
+      <div id="progressSection" class="progress-section hidden">
+        <div class="progress-header">
+          <span id="progressStatus" class="progress-status">Initializing Presidio NLP engine...</span>
+          <span id="progressPercent" class="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Results Card & Download Section -->
+      <div id="resultsSection" class="results-section hidden">
+        <div class="results-banner">
+          <div class="success-icon-wrapper">
+            <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Anonymization Complete!</h3>
+            <p>Sensitive PII successfully replaced with synthetic alternatives.</p>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Total Redactions</span>
+            <span id="metricTotal" class="metric-value">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Names Replaced</span>
+            <span id="metricPerson" class="metric-value">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Emails Anonymized</span>
+            <span id="metricEmail" class="metric-value">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Phones Replaced</span>
+            <span id="metricPhone" class="metric-value">0</span>
+          </div>
+        </div>
+
+        <!-- Download Button -->
+        <div class="download-wrapper">
+          <a id="downloadBtn" href="#" class="btn-success">
+            <svg class="btn-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download Redacted Document
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/static/main.js"></script>
+</body>
+</html>

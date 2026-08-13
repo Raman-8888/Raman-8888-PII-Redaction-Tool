@@ -1,61 +1,57 @@
-# Anonymize Documents with Presidio & Faker
+# Anonymize Documents with Presidio, Faker & Web GUI
 
-A production-grade PII detection, redaction, and synthetic anonymization tool designed for PDF, Word (`.docx`), and PowerPoint (`.pptx`) documents using **Microsoft Presidio**, **spaCy NER**, and **Faker**.
+A production-grade PII detection, redaction, and synthetic anonymization suite designed for Word (`.docx`), PDF (`.pdf`), and PowerPoint (`.pptx`) documents using **Microsoft Presidio**, **spaCy NER**, **Faker**, and a modern **Web GUI Interface**.
+
+---
+
+## 🎨 Web GUI Features
+
+- 📁 **Drag & Drop Uploader**: Upload `.docx`, `.pdf`, or `.pptx` documents effortlessly.
+- ⚡ **Animated Real-Time Progress Bar**: Displays live processing stages from 0% to 100%.
+- 🎭 **Synthetic Anonymization**: Replaces real PII with realistic, consistent synthetic alternatives (e.g. `Rashi Patil` $\rightarrow$ `John Doe`, `rashi@gmail.com` $\rightarrow$ `john.doe@example.com`, `+91 9876543210` $\rightarrow$ `+91 1234567890`).
+- 📊 **Live Entity Dashboard**: Summarizes counts for names, emails, phones, locations, and IDs anonymized.
+- 💾 **Instant Output Download**: Click to download the anonymized document immediately.
 
 ---
 
 ## 🚀 Technical Approach
 
-This project combines NLP statistical named-entity recognition (NER), regex pattern matching, and context-based recognizers to achieve high precision and recall on complex legal and financial documents (*Red Herring Prospectus*).
-
-### Key Components:
-1. **Detection Engine**: Microsoft Presidio Analyzer + spaCy `en_core_web_lg` NER model.
-2. **Custom Recognizers**: Hand-crafted pattern recognizers for honorific names, context words (`Contact Person`, `Director`, `Promoter`), and regional financial IDs (PAN, DIN, CIN, Aadhaar).
+1. **Detection Engine**: Microsoft Presidio Analyzer + spaCy `en_core_web_sm`/`lg` NER model.
+2. **Custom Recognizers**: Hand-crafted pattern recognizers for honorific names, context keywords (`Contact Person`, `Director`, `Promoter`), and regional financial IDs (PAN, DIN, CIN, Aadhaar).
 3. **Multi-Pass Propagation**: Discovers full entity names in Pass 1 and dynamically propagates individual name tokens across the document in Pass 2 to eliminate missed standalone names.
-4. **Synthetic Anonymizer**: Uses `Faker` to replace sensitive PII with realistic, consistent synthetic alternatives (e.g. `Rashi Patil` -> `John Doe`, `rashi@gmail.com` -> `john.doe@example.com`, `+91 9876543210` -> `+91 1234567890`).
+4. **Synthetic Replacement Engine**: Uses `Faker` to generate consistent fake alternatives across the entire document.
 
 ---
 
-## 🎯 Target Entity Coverage
+## 💻 Quick Start & Web GUI Launch
 
-- **Full Names** (`PERSON`)
-- **Email Addresses** (`EMAIL_ADDRESS`)
-- **Phone Numbers** (`PHONE_NUMBER`)
-- **Company Names** (`ORGANIZATION`)
-- **Physical/Mailing Addresses** (`LOCATION`)
-- **Social Security Numbers** (`US_SSN`)
-- **Credit Card Numbers** (`CREDIT_CARD`)
-- **Dates of Birth** (`DATE_TIME`)
-- **IP Addresses** (`IP_ADDRESS`)
-- **Financial & Government IDs** (`IN_PAN`, `DIN`, `CIN`, `Aadhaar`, `Passport`)
-
----
-
-## 💻 Usage & CLI Commands
-
-### 1. Installation
+### 1. Install Dependencies
 ```bash
-pip install presidio-analyzer presidio-anonymizer spacy python-docx python-pptx pymupdf faker
+pip install presidio-analyzer presidio-anonymizer spacy python-docx python-pptx pymupdf faker flask
 python -m spacy download en_core_web_sm
 ```
 
-### 2. Run Synthetic Anonymization (Fake Replacements)
+### 2. Launch Web GUI
 ```bash
-python scripts/anonymize_document.py "input/Red Herring Prospectus_redacted.docx" "output/Red Herring Prospectus_anonymized.docx" --mode anonymize --report
+python app.py
 ```
+Open **`http://127.0.0.1:5000`** in your web browser.
 
-### 3. Run Static Redaction (`[REDACTED]` Tokens)
-```bash
-python scripts/anonymize_document.py "input/Red Herring Prospectus_redacted.docx" "output/Red Herring Prospectus_redacted.docx" --mode redact --report
-```
+---
 
-### 4. Custom Deny List & Score Threshold Tuning
-```bash
-python scripts/anonymize_document.py input/doc.docx output/doc.docx --deny-list "Custom Name,Company XYZ" --score-threshold 0.20
-```
+## 🖥️ CLI Usage Options
 
-### 5. Directory Batch Processing
 ```bash
+# Synthetic Anonymization Mode (Default)
+python scripts/anonymize_document.py input/doc.docx output/anonymized.docx --mode anonymize --report
+
+# Static Redaction Mode ([REDACTED] Tokens)
+python scripts/anonymize_document.py input/doc.docx output/redacted.docx --mode redact --report
+
+# Custom Deny List
+python scripts/anonymize_document.py input/doc.docx output/redacted.docx --deny-list "Custom Name,Company XYZ"
+
+# Directory Batch Processing
 python scripts/anonymize_document.py input/ output/ --mode anonymize --report
 ```
 
@@ -75,18 +71,5 @@ For full evaluation methodology, trade-off analysis, and entity breakdowns, see 
 
 ---
 
-## 🧩 How to Extend to a New PII Type
-
-To add a new entity type (e.g. `DRIVER_LICENSE`):
-1. In `scripts/anonymize_document.py`, add `DRIVER_LICENSE` to `TARGET_ENTITIES` and `ENTITY_ALIASES`.
-2. Add a `PatternRecognizer` with custom regex pattern inside `build_analyzer()`.
-3. Add a synthetic generator case inside `SyntheticAnonymizer.get_replacement()`:
-   ```python
-   elif entity == "DRIVER_LICENSE":
-       val = f"DL-{fake.random_number(digits=8)}"
-   ```
-
----
-
 ## 🛡️ License & Credits
-Licensed under MIT. Powered by Microsoft Presidio, spaCy, and Faker.
+Licensed under MIT. Copyright (c) 2026 Raman Negi.
